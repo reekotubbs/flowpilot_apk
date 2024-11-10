@@ -28,6 +28,8 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 
+import androidx.annotation.OptIn;
+import androidx.camera.camera2.interop.ExperimentalCamera2Interop;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentTransaction;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
@@ -49,7 +51,8 @@ public class AndroidLauncher extends FragmentActivity implements AndroidFragment
 	public static Context appContext;
 	public static ParamsInterface params;
 
-	@SuppressLint("HardwareIds")
+    @OptIn(markerClass = ExperimentalCamera2Interop.class)
+    @SuppressLint("HardwareIds")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -96,8 +99,8 @@ public class AndroidLauncher extends FragmentActivity implements AndroidFragment
 
 		AndroidApplicationConfiguration configuration = new AndroidApplicationConfiguration();
 //		SensorManager sensorManager = new SensorManager(appContext, 20);
-		CameraHandler cameraManager = new CameraHandler(getApplication().getApplicationContext());
-//		CameraManager cameraManager = new CameraManager(getApplication().getApplicationContext(), utils.F2 || Camera.FORCE_TELE_CAM_F3 ? Camera.CAMERA_TYPE_ROAD : Camera.CAMERA_TYPE_WIDE);
+//		CameraHandler cameraManager = new CameraHandler(getApplication().getApplicationContext());
+		CameraManager cameraManager = new CameraManager(getApplication().getApplicationContext());
 
 		PandaManager pandaManager = new PandaManager(getApplication().getApplicationContext());
 		OnroadManager onroadManager = new OnroadManager(getApplication().getApplicationContext());
@@ -132,19 +135,6 @@ public class AndroidLauncher extends FragmentActivity implements AndroidFragment
 			case THNEED:
 				model = new THNEEDModelRunner(modelPath, getApplication());
 				break;
-			case EXTERNAL_TINYGRAD:
-				// start the special model parser
-				/*Intent intent = new Intent();
-				intent.setClassName(TermuxConstants.TERMUX_PACKAGE_NAME, TermuxConstants.TERMUX_APP.RUN_COMMAND_SERVICE_NAME);
-				intent.setAction(TermuxConstants.TERMUX_APP.RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND);
-				intent.putExtra(TermuxConstants.TERMUX_APP.RUN_COMMAND_SERVICE.EXTRA_COMMAND_PATH, "/data/data/com.termux/files/usr/bin/bash");
-				intent.putExtra(TermuxConstants.TERMUX_APP.RUN_COMMAND_SERVICE.EXTRA_ARGUMENTS, new String[]{"run"});
-				intent.putExtra(TermuxConstants.TERMUX_APP.RUN_COMMAND_SERVICE.EXTRA_WORKDIR, "/data/data/com.termux/files/home/flowpilot_env_root/root/flowpilot/thneedrunner");
-				intent.putExtra(TermuxConstants.TERMUX_APP.RUN_COMMAND_SERVICE.EXTRA_BACKGROUND, true);
-				intent.putExtra(TermuxConstants.TERMUX_APP.RUN_COMMAND_SERVICE.EXTRA_SESSION_ACTION, "0");
-				intent.putExtra(TermuxConstants.TERMUX_APP.RUN_COMMAND_SERVICE.EXTRA_COMMAND_LABEL, "run thneedrunner");
-				startService(intent);*/
-				break;
 		}
 
 		ModelExecutor modelExecutor;
@@ -167,7 +157,7 @@ public class AndroidLauncher extends FragmentActivity implements AndroidFragment
 
 
 		MainFragment fragment = new MainFragment(new FlowUI(launcher, androidHardwareManager, pid));
-//		cameraManager.setLifeCycleFragment(fragment);
+		cameraManager.setLifeCycleFragment(fragment);
 		FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
 		trans.replace(android.R.id.content, fragment);
 		trans.commit();

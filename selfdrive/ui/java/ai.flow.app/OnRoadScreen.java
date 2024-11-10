@@ -478,7 +478,14 @@ public class OnRoadScreen extends ScreenAdapter {
             public void clicked(InputEvent event, float x, float y) {
                 if (!appContext.isOnRoad)
                     return;
-                setInfoTable(!infoTable.isVisible());
+                if (x>640 && x<960) {
+                    shiftLaneOffset(-0.02f);
+                } else if (x>960) {
+                    shiftLaneOffset(0.02f);
+                } else {
+                    setInfoTable(!infoTable.isVisible());
+                }
+
             }
         });
 
@@ -539,8 +546,8 @@ public class OnRoadScreen extends ScreenAdapter {
                 Thread.sleep(1);
             } catch (Exception e) { }
         }
-        msgframeBuffer = ModelExecutor.msgFrameWideBuffer; // sh.recv(cameraBufferTopic).getWideRoadCameraBuffer();
-        msgframeData = ModelExecutor.frameWideData; // sh.recv(cameraTopic).getWideRoadCameraState();
+        msgframeBuffer = ModelExecutor.msgFrameWideBuffer;
+        msgframeData = ModelExecutor.frameWideData;
         imgBuffer = updateImageBuffer(msgframeBuffer, imgBuffer);
     }
 
@@ -763,6 +770,20 @@ public class OnRoadScreen extends ScreenAdapter {
         stageSettings.getViewport().update(width, height);
     }
 
+    private float getLaneOffset() {
+        try {
+            return Float.parseFloat(params.getString("LaneCameraOffset"));
+        } catch (NumberFormatException exc) {
+            return 0.08f;
+        }
+    }
+
+    private void shiftLaneOffset(float delta) {
+        float laneOffset = getLaneOffset();
+        laneOffset += delta;
+        params.put("LaneCameraOffset", Float.toString(laneOffset));
+    }
+
     @Override
     public void render(float delta) {
         Gdx.gl.glClearColor(0f, 0f, 0f, 1);
@@ -809,11 +830,18 @@ public class OnRoadScreen extends ScreenAdapter {
 //                UpdateIP();
 //            }
 
+            appContext.shapeRenderer.setProjectionMatrix(cameraModel.combined);
+            appContext.shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            appContext.shapeRenderer.setColor(Color.RED);
+            appContext.shapeRenderer.rectLine(Camera.CenterX - 20.f, Camera.CenterY,Camera.CenterX + 20.f, Camera.CenterY, 2.f);
+            appContext.shapeRenderer.rectLine(Camera.CenterX, Camera.CenterY - 20.f,Camera.CenterX, Camera.CenterY + 20.f, 2.f);
+            appContext.shapeRenderer.end();
+
             batch.begin();
             appContext.font.setColor(1, 1, 1, 1);
             appContext.font.draw(batch, "L1: " + Line1 + "\nL2: " + Line2,3,200);
             appContext.font.draw(batch, utils.F2 ? "Medium Model" : "Big Model", Gdx.graphics.getWidth() - 450f, 300f);
-            appContext.font.draw(batch, "v" + VERSION + ", E" + CamExposure + ":" + currentExposureIndex, Gdx.graphics.getWidth() - 450f, 225f);
+            appContext.font.draw(batch, "COff: " + getLaneOffset(), Gdx.graphics.getWidth() - 450f, 225f);
             appContext.font.draw(batch, tempStr + ", " + ModelExecutorF3.AvgIterationTime + "ms", Gdx.graphics.getWidth() - 450f, 150f);
             appContext.font.draw(batch, IPstring, Gdx.graphics.getWidth() - 450f, 75f);
             batch.end();

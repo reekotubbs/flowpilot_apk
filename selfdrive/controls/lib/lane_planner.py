@@ -10,7 +10,7 @@ from common.params import Params
 
 TRAJECTORY_SIZE = 33
 # positive numbers go right
-CAMERA_OFFSET = 0.08
+# CAMERA_OFFSET = 0.08
 MIN_LANE_DISTANCE = 2.6
 MAX_LANE_DISTANCE = 3.7
 TYPICAL_MIN_LANE_DISTANCE = 2.7
@@ -52,6 +52,7 @@ class LanePlanner:
     self.lane_width = 3.2
     self.lane_change_multiplier = 1
     self.Options = Params()
+    self.get_camera_offset()
     self.UseModelPath = self.Options.get_bool("UseModelPath")
     self.BigModel = self.Options.get_bool("F3")
     self.updateOptions = 100
@@ -66,6 +67,13 @@ class LanePlanner:
 
     self.l_lane_change_prob = 0.
     self.r_lane_change_prob = 0.
+
+  def get_camera_offset(self):
+    offset = self.Options.get("LaneCameraOffset")
+    if offset is None:
+      self.CameraOffset = 0.08
+    else:
+      self.CameraOffset = float(offset)
 
   def parse_model(self, md):
 
@@ -145,7 +153,7 @@ class LanePlanner:
     else:
       sLogger.Send("vC--- LX" + "{:.1f}".format(self.lll_y[0]) + " RX" + "{:.1f}".format(self.rll_y[0]) + " LW" + "{:.1f}".format(self.lane_width) + " LP" + "{:.1f}".format(l_prob) + " RP" + "{:.1f}".format(r_prob) + " RS" + "{:.1f}".format(self.rll_std) + " LS" + "{:.1f}".format(self.lll_std))
 
-    path_xyz[:, 1] += CAMERA_OFFSET
+    path_xyz[:, 1] += self.CameraOffset
 
     return path_xyz
 
@@ -248,6 +256,6 @@ class LanePlanner:
       sLogger.Send("Lanes lost completely! Using model path entirely...")
 
     # apply camera offset and centering force after everything
-    path_xyz[:, 1] += CAMERA_OFFSET + self.center_force
+    path_xyz[:, 1] += self.CameraOffset + self.center_force
 
     return path_xyz

@@ -138,8 +138,8 @@ public class ModelExecutorF3 extends ModelExecutor {
             for (int i = 0; i < 3; i++) {
                 rpy_calib.putScalar(i, rpy.get(i));
             }
-            wrapMatrix = Preprocess.getWrapMatrix(rpy_calib, Camera.cam_intrinsics, Camera.cam_intrinsics, true, false);
-            wrapMatrixWide = Preprocess.getWrapMatrix(rpy_calib, Camera.cam_intrinsics, Camera.cam_intrinsics, true, true);
+            wrapMatrix = Preprocess.getWarpMatrix(rpy_calib, Camera.cam_intrinsics, Camera.cam_intrinsics, true, false);
+            wrapMatrixWide = Preprocess.getWarpMatrix(rpy_calib, Camera.cam_intrinsics, Camera.cam_intrinsics, true, true);
         }
 
         netInputBuffer = imagePrepare.prepare(imgBuffer, wrapMatrix);
@@ -227,8 +227,8 @@ public class ModelExecutorF3 extends ModelExecutor {
         modelRunner.init(inputShapeMap, outputShapeMap);
         modelRunner.warmup();
 
-        wrapMatrix = Preprocess.getWrapMatrix(rpy_calib, Camera.cam_intrinsics, Camera.cam_intrinsics, true, false);
-        wrapMatrixWide = Preprocess.getWrapMatrix(rpy_calib, Camera.cam_intrinsics, Camera.cam_intrinsics, true, true);
+        wrapMatrix = Preprocess.getWarpMatrix(rpy_calib, Camera.cam_intrinsics, Camera.cam_intrinsics, true, false);
+        wrapMatrixWide = Preprocess.getWarpMatrix(rpy_calib, Camera.cam_intrinsics, Camera.cam_intrinsics, true, true);
 
         // wait for a frame
         while (msgFrameBuffer == null) {

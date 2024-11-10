@@ -1,32 +1,23 @@
 package ai.flow.modeld;
 
 import static ai.flow.common.SystemUtils.getUseGPU;
-import static ai.flow.common.utils.numElements;
 import static ai.flow.sensor.messages.MsgFrameBuffer.updateImageBuffer;
 
 import org.capnproto.PrimitiveList;
-import org.nd4j.linalg.api.memory.MemoryWorkspace;
 import org.nd4j.linalg.api.memory.conf.WorkspaceConfiguration;
 import org.nd4j.linalg.api.memory.enums.AllocationPolicy;
 import org.nd4j.linalg.api.memory.enums.LearningPolicy;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.indexing.INDArrayIndex;
-import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.opencv.core.Core;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 import ai.flow.common.ParamsInterface;
 import ai.flow.common.transformations.Camera;
-import ai.flow.common.utils;
 import ai.flow.definitions.Definitions;
 import ai.flow.modeld.messages.FloatArraySender;
-import ai.flow.modeld.messages.MsgModelRaw;
-import messaging.ZMQPubHandler;
 import messaging.ZMQSubHandler;
 
 public class ModelExecutorExternal extends ModelExecutor {
@@ -83,8 +74,8 @@ public class ModelExecutorExternal extends ModelExecutor {
             for (int i = 0; i < 9; i++) {
                 rpy_calib.putScalar(i, rpy.get(i));
             }
-            wrapMatrix = Preprocess.getWrapMatrix(rpy_calib, Camera.cam_intrinsics, Camera.cam_intrinsics, true, false);
-            wrapMatrixWide = Preprocess.getWrapMatrix(rpy_calib, Camera.cam_intrinsics, Camera.cam_intrinsics, true, true);
+            wrapMatrix = Preprocess.getWarpMatrix(rpy_calib, Camera.cam_intrinsics, Camera.cam_intrinsics, true, false);
+            wrapMatrixWide = Preprocess.getWarpMatrix(rpy_calib, Camera.cam_intrinsics, Camera.cam_intrinsics, true, true);
         }
 
         netInputBuffer = imagePrepare.prepare(imgBuffer, wrapMatrix);
@@ -123,8 +114,8 @@ public class ModelExecutorExternal extends ModelExecutor {
 
         sh.createSubscribers(Arrays.asList("lateralPlan", "liveCalibration"));
 
-        wrapMatrix = Preprocess.getWrapMatrix(rpy_calib, Camera.cam_intrinsics, Camera.cam_intrinsics, true, false);
-        wrapMatrixWide = Preprocess.getWrapMatrix(rpy_calib, Camera.cam_intrinsics, Camera.cam_intrinsics, true, true);
+        wrapMatrix = Preprocess.getWarpMatrix(rpy_calib, Camera.cam_intrinsics, Camera.cam_intrinsics, true, false);
+        wrapMatrixWide = Preprocess.getWarpMatrix(rpy_calib, Camera.cam_intrinsics, Camera.cam_intrinsics, true, true);
 
         // wait for a frame
         while (msgFrameBuffer == null) {

@@ -15,6 +15,21 @@ public class Camera {
         CenterX = 640f, //632
         CenterY = 360f; //358
 
+    public static void recalculate() {
+        OffsetX = CenterX - (frameSize[0]*0.5f);
+        OffsetY = CenterY - (frameSize[1]*0.5f);
+
+        CameraIntrinsics = new float[]{
+            FocalX, 0.0f, frameSize[0] * 0.5f + OffsetX * digital_zoom_apply,
+            0.0f, FocalY, frameSize[1] * 0.5f + OffsetY * digital_zoom_apply,
+            0.0f,   0.0f, 1.0f
+        };
+        cam_intrinsics = Nd4j.createFromArray(new float[][]{
+                { CameraIntrinsics[0],  0.0f,  CameraIntrinsics[2]},
+                {0.0f,  CameraIntrinsics[4],  CameraIntrinsics[5]},
+                {0.0f,  0.0f,  1.0f}
+        });
+    }
     // Camera 2
    // MATRIX: [538.2648047477589, 0, 635.4029785884212;
 //0, 538.3225487046863, 348.6366566852139;

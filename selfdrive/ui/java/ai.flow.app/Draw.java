@@ -1,9 +1,9 @@
 package ai.flow.app;
 
+import ai.flow.common.transformations.Camera;
 import ai.flow.modeld.CommonModelF3;
 import ai.flow.modeld.LeadDataV3;
 
-import com.badlogic.gdx.math.Matrix3;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 
@@ -17,11 +17,20 @@ public class Draw {
     public static final float LEAD_Y_SCALE = 10f;
 
     public static Matrix4 cam_intrinsics = new Matrix4(new float[] {
-            930.f,  0.0f, 0.0f, 0.f,
-            0.0f, 930.f, 0.0f, 0.f,
-            640.0f, 360.0f, 1.0f, 0.f,
+            Camera.CameraIntrinsics[0],  0.0f, 0.0f, 0.f,
+            0.0f, Camera.CameraIntrinsics[4], 0.0f, 0.f,
+            Camera.CameraIntrinsics[2], Camera.CameraIntrinsics[5], 1.0f, 0.f,
             0.f, 0.f, 0.f, 0.f
     });
+
+    public static void recalculate() {
+        cam_intrinsics = new Matrix4(new float[] {
+                Camera.CameraIntrinsics[0],  0.0f, 0.0f, 0.f,
+                0.0f, Camera.CameraIntrinsics[4], 0.0f, 0.f,
+                Camera.CameraIntrinsics[2], Camera.CameraIntrinsics[5], 1.0f, 0.f,
+                0.f, 0.f, 0.f, 0.f
+        });
+    }
 
     public static Vector3[][] getLaneCameraFrame(ArrayList<float[]> lane, Matrix4 K, Matrix4 Rt, float width) {
         // Camera assumes x left, y up, z forward
