@@ -493,6 +493,8 @@ public class OnRoadScreen extends ScreenAdapter {
         animationSunset = GifDecoder.loadGIFAnimation(Animation.PlayMode.LOOP, Gdx.files.internal("gifs/sunset.gif").read());
         animationNight = GifDecoder.loadGIFAnimation(Animation.PlayMode.LOOP, Gdx.files.internal("gifs/night.gif").read());
 
+        getLaneOffset();
+
         sh = new ZMQSubHandler(true);
         sh.createSubscribers(Arrays.asList("lateralPlan", cameraTopic, cameraBufferTopic, deviceStateTopic, calibrationTopic, carStateTopic, controlsStateTopic, modelTopic, "roadCameraBuffer", "roadCameraState"));
     }
@@ -770,16 +772,18 @@ public class OnRoadScreen extends ScreenAdapter {
         stageSettings.getViewport().update(width, height);
     }
 
-    private float getLaneOffset() {
+    private float laneOffset = 0.08f;
+
+    private void getLaneOffset() {
         try {
-            return Float.parseFloat(params.getString("LaneCameraOffset"));
+            laneOffset = Float.parseFloat(params.getString("LaneCameraOffset"));
         } catch (NumberFormatException exc) {
-            return 0.08f;
+            laneOffset = 0.08f;
         }
     }
 
     private void shiftLaneOffset(float delta) {
-        float laneOffset = getLaneOffset();
+        getLaneOffset();
         laneOffset += delta;
         params.put("LaneCameraOffset", Float.toString(laneOffset));
     }
@@ -841,7 +845,7 @@ public class OnRoadScreen extends ScreenAdapter {
             appContext.font.setColor(1, 1, 1, 1);
             appContext.font.draw(batch, "L1: " + Line1 + "\nL2: " + Line2,3,200);
             appContext.font.draw(batch, utils.F2 ? "Medium Model" : "Big Model", Gdx.graphics.getWidth() - 450f, 300f);
-            appContext.font.draw(batch, "COff: " + getLaneOffset(), Gdx.graphics.getWidth() - 450f, 225f);
+            appContext.font.draw(batch, "COff: " + laneOffset, Gdx.graphics.getWidth() - 450f, 225f);
             appContext.font.draw(batch, tempStr + ", " + ModelExecutorF3.AvgIterationTime + "ms", Gdx.graphics.getWidth() - 450f, 150f);
             appContext.font.draw(batch, IPstring, Gdx.graphics.getWidth() - 450f, 75f);
             batch.end();

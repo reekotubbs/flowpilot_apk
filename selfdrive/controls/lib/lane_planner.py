@@ -81,6 +81,7 @@ class LanePlanner:
     if self.updateOptions <= 0:
       self.updateOptions = 100
       self.UseModelPath = self.Options.get_bool("UseModelPath")
+      self.get_camera_offset()
 
     lane_lines = md.laneLines
     edges = md.roadEdges

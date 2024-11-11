@@ -10,8 +10,8 @@ public class Camera {
     public static final boolean FORCE_TELE_CAM_F3 = false;
 
     public static float
-        FocalX = 930f,
-        FocalY = 930f,
+        FocalX = 1930f,
+        FocalY = 1930f,
         CenterX = 640f, //632
         CenterY = 360f; //358
 
