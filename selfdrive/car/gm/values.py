@@ -2,10 +2,10 @@ from dataclasses import dataclass, field
 from enum import Enum, IntFlag
 
 from cereal import car
-from openpilot.common.numpy_fast import interp
-from openpilot.selfdrive.car import dbc_dict, PlatformConfig, DbcDict, Platforms, CarSpecs
-from openpilot.selfdrive.car.docs_definitions import CarFootnote, CarHarness, CarInfo, CarParts, Column
-from openpilot.selfdrive.car.fw_query_definitions import FwQueryConfig, Request, StdQueries
+from common.numpy_fast import interp
+from selfdrive.car import dbc_dict, PlatformConfig, DbcDict, Platforms, CarSpecs
+from selfdrive.car.docs_definitions import CarFootnote, CarHarness, CarInfo, CarParts, Column
+from selfdrive.car.fw_query_definitions import FwQueryConfig, Request, StdQueries
 
 Ecu = car.CarParams.Ecu
 
@@ -327,6 +327,7 @@ CAMERA_ACC_CAR.update({CAR.VOLT_CC, CAR.BOLT_CC, CAR.EQUINOX_CC, CAR.YUKON_CC, C
 STEER_THRESHOLD = 1.0
 
 DBC = CAR.create_dbc_map()
+
 '''
 from collections import defaultdict
 from dataclasses import dataclass
