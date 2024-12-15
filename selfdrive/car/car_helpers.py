@@ -75,7 +75,7 @@ interfaces = load_interfaces(interface_names)
 # **** for use live only ****
 def fingerprint(logcan, sendcan, num_pandas):
   params = Params()
-  fixed_fingerprint = os.environ.get('FINGERPRINT', "CHEVROLET VOLT PREMIER 2016")
+  fixed_fingerprint = os.environ.get('FINGERPRINT', "")
   if not fixed_fingerprint:
     fixed_fingerprint = params.get("Mycar")
     if fixed_fingerprint is not None:

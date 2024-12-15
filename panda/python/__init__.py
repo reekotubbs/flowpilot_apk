@@ -143,9 +143,6 @@ class Panda:
   SERIAL_LIN1 = 2
   SERIAL_LIN2 = 3
   SERIAL_SOM_DEBUG = 4
-  
-  GMLAN_CAN2 = 1
-  GMLAN_CAN3 = 2
 
   USB_PIDS = (0xddee, 0xddcc)
   REQUEST_IN = usb1.ENDPOINT_IN | usb1.TYPE_VENDOR | usb1.RECIPIENT_DEVICE
@@ -224,14 +221,6 @@ class Panda:
 
   FLAG_GM_HW_CAM = 1
   FLAG_GM_HW_CAM_LONG = 2
-  FLAG_GM_HW_SDGM = 4
-  FLAG_GM_CC_LONG = 8
-  FLAG_GM_HW_ASCM_LONG = 16
-  FLAG_GM_NO_CAMERA = 32
-  FLAG_GM_NO_ACC = 64
-  FLAG_GM_PEDAL_LONG = 128  # TODO: This can be inferred
-  FLAG_GM_GAS_INTERCEPTOR = 256
-
 
   FLAG_FORD_LONG_CONTROL = 1
   FLAG_FORD_CANFD = 2
@@ -656,7 +645,6 @@ class Panda:
       "safety_rx_invalid": a[4],
       "tx_buffer_overflow": a[5],
       "rx_buffer_overflow": a[6],
-      "gmlan_send_errs": a[7],
       "faults": a[7],
       "ignition_line": a[8],
       "ignition_can": a[9],
@@ -812,18 +800,8 @@ class Panda:
   def set_power_save(self, power_save_enabled=0):
     self._handle.controlWrite(Panda.REQUEST_OUT, 0xe7, int(power_save_enabled), 0, b'')
 
-  def enable_deepsleep(self):
-    self._handle.controlWrite(Panda.REQUEST_OUT, 0xfb, 0, 0, b'')
-
   def set_safety_mode(self, mode=SAFETY_SILENT, param=0):
     self._handle.controlWrite(Panda.REQUEST_OUT, 0xdc, mode, param, b'')
-
-  def set_gmlan(self, bus=2):
-    # TODO: check panda type
-    if bus is None:
-      self._handle.controlWrite(Panda.REQUEST_OUT, 0xdb, 0, 0, b'')
-    elif bus in (Panda.GMLAN_CAN2, Panda.GMLAN_CAN3):
-      self._handle.controlWrite(Panda.REQUEST_OUT, 0xdb, 1, bus, b'')
 
   def set_obd(self, obd):
     self._handle.controlWrite(Panda.REQUEST_OUT, 0xdb, int(obd), 0, b'')
