@@ -268,11 +268,6 @@ class CarInterfaceBase(ABC):
       events.add(EventName.steerOverride)
 
     # Handle button presses
-    
-    #####Begin from opgm-build
-    #distance_button_pressed = False
-    #####End from opgm-build
-    
     for b in cs_out.buttonEvents:
       # Enable OP long on falling edge of enable buttons (defaults to accelCruise and decelCruise, overridable per-port)
       if not self.CP.pcmCruise and (b.type in enable_buttons and not b.pressed):
@@ -280,13 +275,6 @@ class CarInterfaceBase(ABC):
       # Disable on rising and falling edge of cancel for both stock and OP long
       if b.type == ButtonType.cancel:
         events.add(EventName.buttonCancel)
-        
-    #####Begin from opgm-build
-    #  if b.type == ButtonType.gapAdjustCruise:
-    #    distance_button_pressed = True
-    #if self.CP.openpilotLongitudinalControl:
-    #  self.CS.update_personality(distance_button_pressed)
-    #####End from opgm-build
 
     # Handle permanent and temporary steering faults
     self.steering_unpressed = 0 if cs_out.steeringPressed else self.steering_unpressed + 1
@@ -315,13 +303,6 @@ class CarInterfaceBase(ABC):
         events.add(EventName.pcmEnable)
       elif not cs_out.cruiseState.enabled:
         events.add(EventName.pcmDisable)
-        
-    #####Begin from opgm-build
-    #if self.CS.personality_updated != -1:
-    #  personality_events = [EventName.personalityAggressive, EventName.personalityStandard, EventName.personalityRelaxed]
-    #  events.add(personality_events[self.CS.personality_updated])
-    #  self.CS.personality_updated = -1
-    #####End from opgm-build
 
     return events
 
@@ -332,25 +313,20 @@ class RadarInterfaceBase(ABC):
     self.pts = {}
     self.delay = 0
     self.radar_ts = CP.radarTimeStep
-  #####Begin from opgm-build
-    self.frame = 0
+    self.no_radar_sleep = 'NO_RADAR_SLEEP' in os.environ
 
   def update(self, can_strings):
-    self.frame += 1
-    if (self.frame % int(100 * self.radar_ts)) == 0:
-      return car.RadarData.new_message()
-    return None  
-  #####End from opgm-build
+    ret = car.RadarData.new_message()
+    if not self.no_radar_sleep:
+      time.sleep(self.radar_ts)  # radard runs on RI updates
+    return ret
+
 
 class CarStateBase(ABC):
   def __init__(self, CP):
     self.CP = CP
     self.car_fingerprint = CP.carFingerprint
     self.out = car.CarState.new_message()
-
-    #####Begin from opgm-build
-    #self.personality_updated = -1
-    #####End from opgm-build
 
     self.cruise_buttons = 0
     self.left_blinker_cnt = 0
