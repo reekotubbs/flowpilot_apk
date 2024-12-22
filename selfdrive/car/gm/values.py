@@ -1,18 +1,9 @@
 from collections import defaultdict
 from dataclasses import dataclass
-
-#####Begin from opgm-build
-from enum import Enum, IntFlag
-#####End from opgm-build
-
+from enum import Enum
 from typing import Dict, List, Union
 
 from cereal import car
-
-#####Begin from opgm-build
-from common.numpy_fast import interp
-#####End from opgm-build
-
 from selfdrive.car import dbc_dict
 from selfdrive.car.docs_definitions import CarFootnote, CarInfo, CarPart, CarParts, Column
 Ecu = car.CarParams.Ecu
@@ -46,9 +37,7 @@ class CarControllerParams:
     self.ZERO_GAS = 2048  # Coasting
     self.MAX_BRAKE = 400  # ~ -4.0 m/s^2 with regen
 
-    #####Begin from opgm-build if CP.carFingerprint in CAMERA_ACC_CAR: -> if CP.carFingerprint in CAMERA_ACC_CAR and CP.carFingerprint not in CC_ONLY_CAR:
-    if CP.carFingerprint in CAMERA_ACC_CAR and CP.carFingerprint not in CC_ONLY_CAR:
-    #####End from opgm-build
+    if CP.carFingerprint in CAMERA_ACC_CAR:
       self.MAX_GAS = 3400
       self.MAX_ACC_REGEN = 1514
       self.INACTIVE_REGEN = 1554
@@ -70,18 +59,7 @@ class CarControllerParams:
     self.BRAKE_LOOKUP_BP = [self.ACCEL_MIN, max_regen_acceleration]
     self.BRAKE_LOOKUP_V = [self.MAX_BRAKE, 0.]
 
-  #####Begin from opgm-build add to blank line
-  # determined by letting Volt regen to a stop in L gear from 89mph,
-  # and by letting off gas and allowing car to creep, for determining
-  # the positive threshold values at very low speed
-  EV_GAS_BRAKE_THRESHOLD_BP = [1.29, 1.52, 1.55, 1.6, 1.7, 1.8, 2.0, 2.2, 2.5, 5.52, 9.6, 20.5, 23.5, 35.0] # [m/s]
-  EV_GAS_BRAKE_THRESHOLD_V = [0.0, -0.14, -0.16, -0.18, -0.215, -0.255, -0.32, -0.41, -0.5, -0.72, -0.895, -1.125, -1.145, -1.16] # [m/s^s]
 
-  def update_ev_gas_brake_threshold(self, v_ego):
-    gas_brake_threshold = interp(v_ego, self.EV_GAS_BRAKE_THRESHOLD_BP, self.EV_GAS_BRAKE_THRESHOLD_V)
-    self.EV_GAS_LOOKUP_BP = [gas_brake_threshold, max(0., gas_brake_threshold), self.ACCEL_MAX]
-    self.EV_BRAKE_LOOKUP_BP = [self.ACCEL_MIN, gas_brake_threshold]
-  #####End from opgm-build
 class CAR:
   HOLDEN_ASTRA = "HOLDEN ASTRA RS-V BK 2017"
   VOLT = "CHEVROLET VOLT PREMIER 2017"
@@ -96,9 +74,6 @@ class CAR:
   SILVERADO = "CHEVROLET SILVERADO 1500 2020"
   EQUINOX = "CHEVROLET EQUINOX 2019"
   TRAILBLAZER = "CHEVROLET TRAILBLAZER 2021"
-  #####Begin from opgm-build
-  VOLT_CC = "CHEVROLET VOLT NO ACC"
-  #####End from opgm-build
 
 
 class Footnote(Enum):
@@ -140,9 +115,6 @@ CAR_INFO: Dict[str, Union[GMCarInfo, List[GMCarInfo]]] = {
   ],
   CAR.EQUINOX: GMCarInfo("Chevrolet Equinox 2019-22"),
   CAR.TRAILBLAZER: GMCarInfo("Chevrolet Trailblazer 2021-22"),
-  #####Begin from opgm-build
-  CAR.VOLT_CC: GMCarInfo("Chevrolet Volt 2016", min_enable_speed=0, video_link="https://youtu.be/QeMCN_4TFfQ"),
-  #####End from opgm-build
 }
 
 
@@ -168,14 +140,6 @@ class CanBus:
   SW_GMLAN = 3
   LOOPBACK = 128
   DROPPED = 192
-  
-#####Begin from opgm-build
-class GMFlags(IntFlag):
-  PEDAL_LONG = 1
-  CC_LONG = 2
-  NO_CAMERA = 4
-  NO_ACCELERATOR_POS_MSG = 8
-#####End from opgm-build
 
 FINGERPRINTS = {
   CAR.HOLDEN_ASTRA: [
@@ -251,33 +215,13 @@ FINGERPRINTS = {
   {
   #   190: 6, 193: 8, 197: 8, 201: 8, 209: 7, 211: 2, 241: 6, 249: 8, 288: 5, 289: 8, 298: 8, 304: 3, 309: 8, 311: 8, 313: 8, 320: 4, 328: 1, 352: 5, 381: 8, 384: 4, 386: 8, 388: 8, 413: 8, 451: 8, 452: 8, 453: 6, 455: 7, 479: 3, 481: 7, 485: 8, 489: 8, 497: 8, 500: 6, 501: 8, 532: 6, 560: 8, 562: 8, 563: 5, 565: 5, 707: 8, 715: 8, 717: 5, 761: 7, 789: 5, 800: 6, 810: 8, 840: 5, 842: 5, 844: 8, 869: 4, 880: 6, 977: 8, 1001: 8, 1011: 6, 1017: 8, 1020: 8, 1217: 8, 1221: 5, 1233: 8, 1249: 8, 1259: 8, 1261: 7, 1263: 4, 1265: 8, 1267: 1, 1271: 8, 1280: 4, 1296: 4, 1300: 8, 1609: 8, 1613: 8, 1649: 8, 1792: 8, 1798: 8, 1824: 8, 1825: 8, 1840: 8, 1842: 8, 1858: 8, 1860: 8, 1863: 8, 1872: 8, 1875: 8, 1882: 8, 1888: 8, 1889: 8, 1892: 8, 1930: 7, 1937: 8, 1953: 8, 1968: 8, 2001: 8, 2017: 8, 2018: 8, 2020: 8
   }],
-  #####Begin from opgm-build
-  CAR.VOLT_CC: [
-  # FIXME: Need a message to distinguish flashed from non-flashed
-  # Volt Premier w/o acc 2016
-   {
-      170: 8, 171: 8, 189: 7, 190: 6, 193: 8, 197: 8, 199: 4, 201: 8, 209: 7, 211: 2, 241: 6, 288: 5, 289: 8, 298: 8, 304: 1, 308: 4, 309: 8, 311: 8, 313: 8, 320: 3, 328: 1, 352: 5, 381: 6, 384: 4, 386: 8, 388: 8, 389: 2, 390: 7, 417: 7, 419: 1, 426: 7, 451: 8, 452: 8, 453: 6, 454: 8, 456: 8, 479: 3, 481: 7, 485: 8, 489: 8, 493: 8, 495: 4, 497: 8, 499: 3, 500: 6, 501: 8, 508: 8, 528: 4, 532: 6, 546: 7, 550: 8, 554: 3, 558: 8, 560: 8, 562: 8, 563: 5, 564: 5, 565: 5, 566: 5, 567: 3, 568: 1, 577: 8, 578: 8, 579: 8, 587: 8, 594: 8, 596: 8, 647: 3, 707: 8, 711: 6, 717: 5, 761: 7, 800: 6, 810: 8, 840: 5, 842: 5, 844: 8, 866: 4, 869: 4, 961: 8, 969: 8, 977: 8, 979: 7, 988: 6, 989: 8, 995: 7, 1001: 8, 1005: 6, 1009: 8, 1017: 8, 1019: 2, 1020: 8, 1033: 7, 1034: 7, 1105: 6, 1187: 4, 1217: 8, 1221: 5, 1223: 3, 1225: 7, 1227: 4, 1233: 8, 1249: 8, 1257: 6, 1265: 8, 1267: 1, 1273: 3, 1275: 3, 1280: 4, 1300: 8, 1322: 6, 1323: 4, 1328: 4, 1345: 8, 1346: 8, 1362: 8, 1417: 8, 1512: 8, 1513: 8, 1516: 8, 1517: 8, 1601: 8, 1602: 8, 1609: 8, 1611: 8, 1613: 8, 1649: 8, 1792: 8, 1793: 8, 1798: 8, 1799: 8, 1810: 8, 1813: 8, 1824: 8, 1825: 8, 1840: 8, 1842: 8, 1856: 8, 1858: 8, 1859: 8, 1860: 8, 1862: 8, 1863: 8, 1871: 8, 1872: 8, 1875: 8, 1879: 8, 1882: 8, 1888: 8, 1889: 8, 1892: 8, 1906: 7, 1907: 7, 1910: 7, 1912: 7, 1920: 8, 1922: 7, 1924: 8, 1927: 7, 1928: 7, 1930: 7, 1937: 8, 1953: 8, 1954: 8, 1955: 8, 1968: 8, 1969: 8, 1971: 8, 1975: 8, 1984: 8, 1988: 8, 1990: 8, 2000: 8, 2001: 8, 2004: 8, 2017: 8, 2018: 8, 2020: 8, 2021: 8, 2023: 8, 2025: 8, 2028: 8, 2031: 8
-   },
-   {
-     201: 8, 493: 8, 495: 4, 193: 8, 197: 8, 209: 7, 171: 8, 456: 8, 199: 4, 489: 8, 211: 2, 499: 3, 390: 7, 532: 6, 568: 1, 761: 7, 381: 6, 485: 8, 189: 7, 479: 3, 711: 6, 501: 8, 241: 6, 717: 5, 869: 4, 389: 2, 454: 8, 170: 8, 190: 6, 497: 8, 417: 7, 419: 1, 426: 7, 451: 8, 452: 8, 453: 6, 500: 6, 508: 8, 528: 4, 647: 3, 1105: 6, 1005: 6, 481: 7, 844: 8, 866: 4, 564: 5, 969: 8, 388: 8, 352: 5, 562: 8, 961: 8, 386: 8, 707: 8, 977: 8, 979: 7, 298: 8, 840: 5, 842: 5, 988: 6, 1001: 8, 560: 8, 546: 7, 558: 8, 309: 8, 995: 7, 311: 8, 566: 5, 567:3, 989: 8, 384: 4, 800: 6, 1033: 7, 1034: 7, 313: 8, 554: 3, 810: 8, 1017: 8, 1019: 2, 1020: 8, 1217: 8, 1223: 3, 1233: 8, 1227: 4, 1417: 8, 1009: 8, 1221: 5, 1275: 3, 1225: 7, 289: 8, 550: 8, 1273: 3, 1928: 7, 1187: 4, 1265: 8, 1927: 7, 1267: 1, 1906: 7, 288: 5, 304: 1, 328: 1, 1912: 7, 320: 3, 1910: 7, 563: 5, 1249: 8, 1930: 7, 1257: 6, 1300: 8, 1322: 6, 1323: 4, 1328: 4, 565: 5, 1280: 4, 1907: 7
-   }
-  # # Volt Premier w/o ACC 2018 + Pedal
-  # {
-  #   189: 7, 193: 8, 197: 8, 201: 8, 209: 7, 211: 2, 241: 6, 288: 5, 298: 8, 304: 1, 308: 4, 309: 8, 311: 8, 313: 8, 320: 3, 328: 1, 352: 5, 381: 6, 384: 4, 386: 8, 388: 8, 451: 8, 452: 8, 453: 6, 479: 3, 481: 7, 485: 8, 489: 8, 493: 8, 497: 8, 500: 6, 501: 8, 513: 6, 528: 4, 532: 6, 560: 8, 562: 8, 563: 5, 565: 5, 566: 5, 608: 8, 609: 6, 610: 6, 611: 6, 612: 8, 613: 8, 707: 8, 717: 5, 761: 7, 800: 6, 810: 8, 840: 5, 842: 5, 844: 8, 869: 4, 977: 8, 1001: 8, 1017: 8, 1020: 8, 1033: 7, 1034: 7, 1217: 8, 1221: 5, 1233: 8, 1249: 8, 1265: 8, 1267: 1, 1280: 4, 1300: 8, 1922: 7, 1930: 7
-  # }
-  ],
-  #####End from opgm-build
 }
 
 DBC: Dict[str, Dict[str, str]] = defaultdict(lambda: dbc_dict('gm_global_a_powertrain_generated', 'gm_global_a_object', chassis_dbc='gm_global_a_chassis'))
 
-#####Begin from opgm-build add CC_ONLY_CAR and CAMERA_ACC_CAR.update and include CAR.VOLT_CC
-EV_CAR = {CAR.VOLT, CAR.VOLT_CC, CAR.BOLT_EUV}
-CC_ONLY_CAR = {CAR.VOLT_CC}
+EV_CAR = {CAR.VOLT, CAR.BOLT_EUV}
 
 # We're integrated at the camera with VOACC on these cars (instead of ASCM w/ OBD-II harness)
 CAMERA_ACC_CAR = {CAR.BOLT_EUV, CAR.SILVERADO, CAR.EQUINOX, CAR.TRAILBLAZER}
-CAMERA_ACC_CAR.update({CAR.VOLT_CC})
-#####End from opgm-build
 
 STEER_THRESHOLD = 1.0
