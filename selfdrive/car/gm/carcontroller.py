@@ -9,6 +9,7 @@ from common.realtime import DT_CTRL
 from opendbc.can.packer import CANPacker
 
 #####Begin from opgm-build
+from common.params_pyx import Params
 from selfdrive.car import apply_driver_steer_torque_limits, create_gas_interceptor_command
 #####End from opgm-build
 
@@ -55,9 +56,9 @@ class CarController:
 
     self.params = CarControllerParams(self.CP)
     
-    '''#####Begin from opgm-build
+    #####Begin from opgm-build
     self.params_ = Params()
-    #####End from opgm-build'''
+    #####End from opgm-build
 
     self.packer_pt = CANPacker(DBC[self.CP.carFingerprint]['pt'])
     self.packer_obj = CANPacker(DBC[self.CP.carFingerprint]['radar'])
@@ -163,10 +164,10 @@ class CarController:
 
         idx = (self.frame // 4) % 4
 
-        '''if self.CP.flags & GMFlags.CC_LONG.value:
+        if self.CP.flags & GMFlags.CC_LONG.value:
           if CC.longActive and CS.out.vEgo > self.CP.minEnableSpeed:
             # Using extend instead of append since the message is only sent intermittently
-            can_sends.extend(gmcan.create_gm_cc_spam_command(self.packer_pt, self, CS, actuators))'''
+            can_sends.extend(gmcan.create_gm_cc_spam_command(self.packer_pt, self, CS, actuators))
         if self.CP.enableGasInterceptor:
           can_sends.append(create_gas_interceptor_command(self.packer_pt, interceptor_gas_cmd, idx))
         if self.CP.carFingerprint not in CC_ONLY_CAR:
