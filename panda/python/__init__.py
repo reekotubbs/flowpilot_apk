@@ -107,6 +107,12 @@ class ALTERNATIVE_EXPERIENCE:
   DISABLE_STOCK_AEB = 2
   RAISE_LONGITUDINAL_LIMITS_TO_ISO_MAX = 8
   ALLOW_AEB = 16
+  
+  #####Begin from opgm-build
+  # PFEIFER - AOL {{
+  ENABLE_ALWAYS_ON_LATERAL = 32
+  # }} PFEIFER - AOL
+  #####End from opgm-build
 
 class Panda:
 
@@ -143,6 +149,11 @@ class Panda:
   SERIAL_LIN1 = 2
   SERIAL_LIN2 = 3
   SERIAL_SOM_DEBUG = 4
+  
+  #####Begin from opgm-build
+  GMLAN_CAN2 = 1
+  GMLAN_CAN3 = 2
+  #####End from opgm-build
 
   USB_PIDS = (0xddee, 0xddcc)
   REQUEST_IN = usb1.ENDPOINT_IN | usb1.TYPE_VENDOR | usb1.RECIPIENT_DEVICE
@@ -221,6 +232,17 @@ class Panda:
 
   FLAG_GM_HW_CAM = 1
   FLAG_GM_HW_CAM_LONG = 2
+
+  #####Begin from opgm-build
+  FLAG_GM_HW_SDGM = 4
+  FLAG_GM_CC_LONG = 8
+  FLAG_GM_HW_ASCM_LONG = 16
+  FLAG_GM_NO_CAMERA = 32
+  FLAG_GM_NO_ACC = 64
+  FLAG_GM_PEDAL_LONG = 128  # TODO: This can be inferred
+  FLAG_GM_GAS_INTERCEPTOR = 256
+  #####End from opgm-build
+
 
   FLAG_FORD_LONG_CONTROL = 1
   FLAG_FORD_CANFD = 2
@@ -645,6 +667,11 @@ class Panda:
       "safety_rx_invalid": a[4],
       "tx_buffer_overflow": a[5],
       "rx_buffer_overflow": a[6],
+
+      #####Begin from opgm-build
+      "gmlan_send_errs": a[7],
+      #####End from opgm-build
+      
       "faults": a[7],
       "ignition_line": a[8],
       "ignition_can": a[9],
@@ -800,8 +827,22 @@ class Panda:
   def set_power_save(self, power_save_enabled=0):
     self._handle.controlWrite(Panda.REQUEST_OUT, 0xe7, int(power_save_enabled), 0, b'')
 
+  #####Begin from opgm-build
+  def enable_deepsleep(self):
+    self._handle.controlWrite(Panda.REQUEST_OUT, 0xfb, 0, 0, b'')
+  #####End from opgm-build
+
   def set_safety_mode(self, mode=SAFETY_SILENT, param=0):
     self._handle.controlWrite(Panda.REQUEST_OUT, 0xdc, mode, param, b'')
+
+  #####Begin from opgm-build
+  def set_gmlan(self, bus=2):
+    # TODO: check panda type
+    if bus is None:
+      self._handle.controlWrite(Panda.REQUEST_OUT, 0xdb, 0, 0, b'')
+    elif bus in (Panda.GMLAN_CAN2, Panda.GMLAN_CAN3):
+      self._handle.controlWrite(Panda.REQUEST_OUT, 0xdb, 1, bus, b'')
+  #####End from opgm-build
 
   def set_obd(self, obd):
     self._handle.controlWrite(Panda.REQUEST_OUT, 0xdb, int(obd), 0, b'')
@@ -930,6 +971,23 @@ class Panda:
   # sending a heartbeat will reenable the checks
   def set_heartbeat_disabled(self):
     self._handle.controlWrite(Panda.REQUEST_OUT, 0xf8, 0, 0, b'')
+
+  #####Begin from opgm-build
+  # ******************* RTC *******************
+  def set_datetime(self, dt):
+    self._handle.controlWrite(Panda.REQUEST_OUT, 0xa1, int(dt.year), 0, b'')
+    self._handle.controlWrite(Panda.REQUEST_OUT, 0xa2, int(dt.month), 0, b'')
+    self._handle.controlWrite(Panda.REQUEST_OUT, 0xa3, int(dt.day), 0, b'')
+    self._handle.controlWrite(Panda.REQUEST_OUT, 0xa4, int(dt.isoweekday()), 0, b'')
+    self._handle.controlWrite(Panda.REQUEST_OUT, 0xa5, int(dt.hour), 0, b'')
+    self._handle.controlWrite(Panda.REQUEST_OUT, 0xa6, int(dt.minute), 0, b'')
+    self._handle.controlWrite(Panda.REQUEST_OUT, 0xa7, int(dt.second), 0, b'')
+  #####End from opgm-build
+
+  def get_datetime(self):
+    dat = self._handle.controlRead(Panda.REQUEST_IN, 0xa0, 0, 0, 8)
+    a = struct.unpack("HBBBBBB", dat)
+    return datetime.datetime(a[0], a[1], a[2], a[4], a[5], a[6])
 
   # ****************** Timer *****************
   def get_microsecond_timer(self):

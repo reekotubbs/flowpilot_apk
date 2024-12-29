@@ -35,7 +35,7 @@ class CarState(CarStateBase):
     #####Begin from opgm-build
     self.single_pedal_mode = False
     self.pedal_steady = 0.
-    #self.distance_button_pressed = False
+    self.distance_button_pressed = False
     #####End from opgm-build
 
   def update(self, pt_cp, cam_cp, loopback_cp):
@@ -47,9 +47,9 @@ class CarState(CarStateBase):
     self.pscm_status = copy.copy(pt_cp.vl["PSCMStatus"])
     self.moving_backward = pt_cp.vl["EBCMWheelSpdRear"]["MovingBackward"] != 0
     
-    '''#####Begin from opgm-build
+    #####Begin from opgm-build
     self.distance_button_pressed = pt_cp.vl["ASCMSteeringButton"]["DistanceButton"] != 0
-    #####End from opgm-build'''
+    #####End from opgm-build
 
     # Variables used for avoiding LKAS faults
     self.loopback_lka_steering_cmd_updated = len(loopback_cp.vl_all["ASCMLKASteeringCmd"]["RollingCounter"]) > 0
@@ -203,6 +203,9 @@ class CarState(CarStateBase):
       ("CruiseState", "AcceleratorPedal2"),
       ("ACCButtons", "ASCMSteeringButton"),
       ("RollingCounter", "ASCMSteeringButton"),
+      #####Begin from opgm-build
+      ("DistanceButton", "ASCMSteeringButton"),
+      #####End from opgm-build
       ("SteeringWheelAngle", "PSCMSteeringAngle"),
       ("SteeringWheelRate", "PSCMSteeringAngle"),
       ("FLWheelSpd", "EBCMWheelSpdFront"),
