@@ -76,7 +76,6 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"LiveParameters", PERSISTENT},
     {"LiveTorqueCarParams", PERSISTENT},
     {"LiveTorqueParameters", PERSISTENT | DONT_LOG},
-    {"LongitudinalPersonality", PERSISTENT},
     {"LaikadEphemerisV3", PERSISTENT | DONT_LOG},
     {"EndToEndToggle", PERSISTENT},
     {"RecordRoad", CLEAR_ON_MANAGER_START},  
