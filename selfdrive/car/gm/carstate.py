@@ -35,7 +35,7 @@ class CarState(CarStateBase):
     #####Begin from opgm-build
     self.single_pedal_mode = False
     self.pedal_steady = 0.
-    #self.distance_button_pressed = False
+    self.distance_button_pressed = False
     #####End from opgm-build
 
   def update(self, pt_cp, cam_cp, loopback_cp):
@@ -47,9 +47,9 @@ class CarState(CarStateBase):
     self.pscm_status = copy.copy(pt_cp.vl["PSCMStatus"])
     self.moving_backward = pt_cp.vl["EBCMWheelSpdRear"]["MovingBackward"] != 0
     
-    '''#####Begin from opgm-build
+    #####Begin from opgm-build
     self.distance_button_pressed = pt_cp.vl["ASCMSteeringButton"]["DistanceButton"] != 0
-    #####End from opgm-build'''
+    #####End from opgm-build
 
     # Variables used for avoiding LKAS faults
     self.loopback_lka_steering_cmd_updated = len(loopback_cp.vl_all["ASCMLKASteeringCmd"]["RollingCounter"]) > 0
@@ -58,7 +58,7 @@ class CarState(CarStateBase):
     
     #####Begin from opgm-build
     if self.CP.networkLocation == NetworkLocation.fwdCamera and not self.CP.flags & GMFlags.NO_CAMERA.value:
-    #####End from opgm-build
+      #####End from opgm-build
       self.pt_lka_steering_cmd_counter = pt_cp.vl["ASCMLKASteeringCmd"]["RollingCounter"]
       self.cam_lka_steering_cmd_counter = cam_cp.vl["ASCMLKASteeringCmd"]["RollingCounter"]
 
@@ -83,7 +83,7 @@ class CarState(CarStateBase):
       ret.brake = pt_cp.vl["EBCMBrakePedalPosition"]["BrakePedalPosition"] / 0xd0
     else:
       ret.brake = pt_cp.vl["ECMAcceleratorPos"]["BrakePedalPos"]
-    #####End from opgm-build
+      #####End from opgm-build
 
     if self.CP.networkLocation == NetworkLocation.fwdCamera:
       ret.brakePressed = pt_cp.vl["ECMEngineStatus"]["BrakePressed"] != 0
@@ -98,7 +98,7 @@ class CarState(CarStateBase):
     if self.CP.transmissionType == TransmissionType.direct:
       ret.regenBraking = pt_cp.vl["EBCMRegenPaddle"]["RegenPaddle"] != 0
     
-    #####Begin from opgm-build
+      #####Begin from opgm-build
       self.single_pedal_mode = ret.gearShifter == GearShifter.low or pt_cp.vl["EVDriveMode"]["SinglePedalModeActive"] == 1
     if self.CP.enableGasInterceptor:
       ret.gas = (pt_cp.vl["GAS_SENSOR"]["INTERCEPTOR_GAS"] + pt_cp.vl["GAS_SENSOR"]["INTERCEPTOR_GAS2"]) / 2.
@@ -107,7 +107,7 @@ class CarState(CarStateBase):
     else:
       ret.gas = pt_cp.vl["AcceleratorPedal2"]["AcceleratorPedal2"] / 254.
       ret.gasPressed = ret.gas > 1e-5
-    #####End from opgm-build
+      #####End from opgm-build
 
     ret.steeringAngleDeg = pt_cp.vl["PSCMSteeringAngle"]["SteeringWheelAngle"]
     ret.steeringRateDeg = pt_cp.vl["PSCMSteeringAngle"]["SteeringWheelRate"]
@@ -155,7 +155,7 @@ class CarState(CarStateBase):
     if self.CP.enableBsm:
       ret.leftBlindspot = pt_cp.vl["BCMBlindSpotMonitor"]["LeftBSM"] == 1
       ret.rightBlindspot = pt_cp.vl["BCMBlindSpotMonitor"]["RightBSM"] == 1
-    #####End from opgm-build
+      #####End from opgm-build
 
     return ret
 
@@ -165,7 +165,7 @@ class CarState(CarStateBase):
     checks = []
     #####Begin from opgm-build
     if CP.networkLocation == NetworkLocation.fwdCamera and not CP.flags & GMFlags.NO_CAMERA.value:
-    #####End from opgm-build
+      #####End from opgm-build
       signals += [
         ("AEBCmdActive", "AEBCmd"),
         ("RollingCounter", "ASCMLKASteeringCmd"),
@@ -183,7 +183,7 @@ class CarState(CarStateBase):
         checks += [
           ("ASCMActiveCruiseControlStatus", 25),
         ]
-      #####End from opgm-build
+        #####End from opgm-build
 
     return CANParser(DBC[CP.carFingerprint]["pt"], signals, checks, CanBus.CAMERA)
 
@@ -203,6 +203,9 @@ class CarState(CarStateBase):
       ("CruiseState", "AcceleratorPedal2"),
       ("ACCButtons", "ASCMSteeringButton"),
       ("RollingCounter", "ASCMSteeringButton"),
+      #####Begin from opgm-build
+      ("DistanceButton", "ASCMSteeringButton"),
+      #####End from opgm-build
       ("SteeringWheelAngle", "PSCMSteeringAngle"),
       ("SteeringWheelRate", "PSCMSteeringAngle"),
       ("FLWheelSpd", "EBCMWheelSpdFront"),
@@ -249,7 +252,7 @@ class CarState(CarStateBase):
       signals.append(("LeftBSM", "BCMBlindSpotMonitor"))
       signals.append(("RightBSM", "BCMBlindSpotMonitor"))
       checks.append(("BCMBlindSpotMonitor", 10))
-    #####End from opgm-build
+      #####End from opgm-build
 
     # Used to read back last counter sent to PT by camera
     if CP.networkLocation == NetworkLocation.fwdCamera:
@@ -265,7 +268,7 @@ class CarState(CarStateBase):
         checks.remove(("ECMAcceleratorPos", 80))
         signals.append(("BrakePedalPosition", "EBCMBrakePedalPosition"))
         checks.append(("EBCMBrakePedalPosition", 100))
-      #####End from opgm-build
+        #####End from opgm-build
 
     if CP.transmissionType == TransmissionType.direct:
       signals.append(("RegenPaddle", "EBCMRegenPaddle"))

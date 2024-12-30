@@ -1,5 +1,5 @@
 #####Begin from opgm-build
-'''from cereal import log'''
+from cereal import log
 from common.conversions import Conversions as CV
 from common.realtime import DT_CTRL
 #####End from opgm-build
@@ -110,15 +110,15 @@ def create_friction_brake_command(packer, bus, apply_brake, idx, enabled, near_s
   return packer.make_can_msg("EBCMFrictionBrakeCmd", bus, values)
 
 
-def create_acc_dashboard_command(packer, bus, enabled, target_speed_kph, lead_car_in_sight, fcw):
+#def create_acc_dashboard_command(packer, bus, enabled, target_speed_kph, lead_car_in_sight, fcw):
 
-  '''#####Begin from opgm-build
-  def create_acc_dashboard_command(packer, bus, enabled, personality, target_speed_kph, lead_car_in_sight, fcw):
-  #####End from opgm-build'''
+#####Begin from opgm-build
+def create_acc_dashboard_command(packer, bus, enabled, personality, target_speed_kph, lead_car_in_sight, fcw):
+  #####End from opgm-build
 
   target_speed = min(target_speed_kph, 255)
 
-  '''#####Begin from opgm-build
+  #####Begin from opgm-build
   if not enabled:
     gap = 0
   elif personality == log.LongitudinalPersonality.aggressive:
@@ -129,17 +129,17 @@ def create_acc_dashboard_command(packer, bus, enabled, target_speed_kph, lead_ca
     gap = 3
   else:
     gap = 3
-  #####End from opgm-build'''
+    #####End from opgm-build
 
   values = {
     "ACCAlwaysOne": 1,
     "ACCResumeButton": 0,
     "ACCSpeedSetpoint": target_speed,
-    "ACCGapLevel": 3 * enabled,  # 3 "far", 0 "inactive"
+    #"ACCGapLevel": 3 * enabled,  # 3 "far", 0 "inactive"
     
-    '''#####Begin from opgm-build
+    #####Begin from opgm-build
     "ACCGapLevel": gap,
-    #####End from opgm-build'''
+    #####End from opgm-build
     
     "ACCCmdActive": enabled,
     "ACCAlwaysOne2": 1,
@@ -248,4 +248,4 @@ def create_gm_cc_spam_command(packer, controller, CS, actuators):
     return [create_buttons(packer, CanBus.POWERTRAIN, idx, cruiseBtn)]
   else:
     return []
-#####End from opgm-build
+    #####End from opgm-build

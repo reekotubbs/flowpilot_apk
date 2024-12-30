@@ -4,14 +4,23 @@ import time
 from abc import abstractmethod, ABC
 from typing import Any, Dict, Optional, Tuple, List, Callable
 
-from cereal import car
+#####Begin from opgm-build
+from cereal import car, log
+#####End from opgm-build
 from common.basedir import BASEDIR
 from common.conversions import Conversions as CV
-from common.kalman.simple_kalman import KF1D
+#####Begin from opgm-build
+from common.kalman.simple_kalman import KF1D#, get_kalman_gain
+#####End from opgm-build
 from common.numpy_fast import clip
+#####Begin from opgm-build
+from common.params import Params
+#####End from opgm-build
 from common.realtime import DT_CTRL
-from selfdrive.car import apply_hysteresis, gen_empty_fingerprint, scale_rot_inertia, scale_tire_stiffness
-from selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, get_friction
+#####Begin from opgm-build
+from selfdrive.car import apply_hysteresis, gen_empty_fingerprint, scale_rot_inertia, scale_tire_stiffness, STD_CARGO_KG
+from selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, get_friction, CRUISE_LONG_PRESS
+#####End from opgm-build
 from selfdrive.controls.lib.events import Events
 from selfdrive.controls.lib.vehicle_model import VehicleModel
 
@@ -98,7 +107,26 @@ class CarInterfaceBase(ABC):
   @classmethod
   def get_params(cls, candidate: str, fingerprint: Dict[int, Dict[int, int]], car_fw: List[car.CarParams.CarFw], experimental_long: bool, docs: bool):
     ret = CarInterfaceBase.get_std_params(candidate)
+    
+    #####Begin from opgm-build
+    ret.mass = candidate.config.specs.mass
+    ret.wheelbase = candidate.config.specs.wheelbase
+    ret.steerRatio = candidate.config.specs.steerRatio
+    ret.centerToFront = ret.wheelbase * candidate.config.specs.centerToFrontRatio
+    ret.minEnableSpeed = candidate.config.specs.minEnableSpeed
+    ret.minSteerSpeed = candidate.config.specs.minSteerSpeed
+    ret.tireStiffnessFactor = candidate.config.specs.tireStiffnessFactor
+    ret.flags |= int(candidate.config.flags)
+    #####End from opgm-build
+    
     ret = cls._get_params(ret, candidate, fingerprint, car_fw, experimental_long, docs)
+
+    #####Begin from opgm-build
+    # Vehicle mass is published curb weight plus assumed payload such as a human driver; notCars have no assumed payload
+    if not ret.notCar:
+      ret.mass = ret.mass + STD_CARGO_KG
+      #####End from opgm-build
+
 
     # Set common params using fields set by the car interface
     # TODO: get actual value, for now starting with reasonable value for
@@ -152,6 +180,10 @@ class CarInterfaceBase(ABC):
     ret.autoResumeSng = True  # describes whether car can resume from a stop automatically
 
     # standard ALC params
+    #####Begin from opgm-build
+    ret.tireStiffnessFactor = 1.0
+    #####End from opgm-build
+
     ret.steerControlType = car.CarParams.SteerControlType.torque
     ret.minSteerSpeed = 0.
     ret.wheelSpeedFactor = 1.0
@@ -269,9 +301,9 @@ class CarInterfaceBase(ABC):
 
     # Handle button presses
     
-    '''#####Begin from opgm-build
+    #####Begin from opgm-build
     distance_button_pressed = False
-    #####End from opgm-build'''
+    #####End from opgm-build
     
     for b in cs_out.buttonEvents:
       # Enable OP long on falling edge of enable buttons (defaults to accelCruise and decelCruise, overridable per-port)
@@ -281,12 +313,12 @@ class CarInterfaceBase(ABC):
       if b.type == ButtonType.cancel:
         events.add(EventName.buttonCancel)
         
-    '''#####Begin from opgm-build
+      #####Begin from opgm-build
       if b.type == ButtonType.gapAdjustCruise:
         distance_button_pressed = True
     if self.CP.openpilotLongitudinalControl:
       self.CS.update_personality(distance_button_pressed)
-    #####End from opgm-build'''
+      #####End from opgm-build
 
     # Handle permanent and temporary steering faults
     self.steering_unpressed = 0 if cs_out.steeringPressed else self.steering_unpressed + 1
@@ -316,12 +348,12 @@ class CarInterfaceBase(ABC):
       elif not cs_out.cruiseState.enabled:
         events.add(EventName.pcmDisable)
         
-    '''#####Begin from opgm-build
+    #####Begin from opgm-build
     if self.CS.personality_updated != -1:
       personality_events = [EventName.personalityAggressive, EventName.personalityStandard, EventName.personalityRelaxed]
       events.add(personality_events[self.CS.personality_updated])
       self.CS.personality_updated = -1
-    #####End from opgm-build'''
+      #####End from opgm-build
 
     return events
 
@@ -332,7 +364,7 @@ class RadarInterfaceBase(ABC):
     self.pts = {}
     self.delay = 0
     self.radar_ts = CP.radarTimeStep
-  #####Begin from opgm-build
+    #####Begin from opgm-build
     self.frame = 0
 
   def update(self, can_strings):
@@ -340,17 +372,21 @@ class RadarInterfaceBase(ABC):
     if (self.frame % int(100 * self.radar_ts)) == 0:
       return car.RadarData.new_message()
     return None  
-  #####End from opgm-build
+    #####End from opgm-build
 
 class CarStateBase(ABC):
   def __init__(self, CP):
     self.CP = CP
+    #####Begin from opgm-build
+    self.params = Params()
+    #####End from opgm-build
+
     self.car_fingerprint = CP.carFingerprint
     self.out = car.CarState.new_message()
 
-    '''#####Begin from opgm-build
+    #####Begin from opgm-build
     self.personality_updated = -1
-    #####End from opgm-build'''
+    #####End from opgm-build
 
     self.cruise_buttons = 0
     self.left_blinker_cnt = 0
@@ -367,6 +403,15 @@ class CarStateBase(ABC):
                          A=[[1.0, DT_CTRL], [0.0, 1.0]],
                          C=[1.0, 0.0],
                          K=[[0.17406039], [1.65925647]])
+
+    #####Begin from opgm-build
+    try:
+      self.longitudinal_personality = int(self.params.get("LongitudinalPersonality", encoding="utf-8"))
+    except (ValueError, TypeError):
+      self.longitudinal_personality = log.LongitudinalPersonality.standard
+    self.distance_button_pressed = False
+    self.distance_button_timer = 0
+    #####End from opgm-build
 
   def update_speed_kf(self, v_ego_raw):
     if abs(v_ego_raw - self.v_ego_kf.x[0][0]) > 2.0:  # Prevent large accelerations when car starts at non zero speed
@@ -421,6 +466,17 @@ class CarStateBase(ABC):
     self.right_blinker_prev = right_blinker_stalk
 
     return bool(left_blinker_stalk or self.left_blinker_cnt > 0), bool(right_blinker_stalk or self.right_blinker_cnt > 0)
+
+  #####Begin from opgm-build
+  def update_personality(self, distance_button_pressed: bool) -> None:
+    if self.distance_button_timer == CRUISE_LONG_PRESS:
+      self.params.put_bool_nonblocking("ExperimentalMode", not self.params.get_bool("ExperimentalMode"))
+    elif not distance_button_pressed and self.distance_button_timer > 0 and self.distance_button_timer < CRUISE_LONG_PRESS:  # falling edge
+      self.longitudinal_personality = (self.longitudinal_personality - 1) % 3
+      self.params.put_nonblocking("LongitudinalPersonality", str(self.longitudinal_personality))
+      self.personality_updated = self.longitudinal_personality
+    self.distance_button_timer = self.distance_button_timer + 1 if distance_button_pressed else 0
+    #####End from opgm-build
 
   @staticmethod
   def parse_gear_shifter(gear: Optional[str]) -> car.CarState.GearShifter:

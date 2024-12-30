@@ -44,7 +44,7 @@ class CarInterface(CarInterfaceBase):
   def get_steer_feedforward_function(self):
     #####Begin from opgm-build
     if self.CP.carFingerprint in (CAR.VOLT, CAR.VOLT_CC):
-    #####End from opgm-build
+      #####End from opgm-build
       return self.get_steer_feedforward_volt
     elif self.CP.carFingerprint == CAR.ACADIA:
       return self.get_steer_feedforward_acadia
@@ -82,10 +82,10 @@ class CarInterface(CarInterfaceBase):
     
     #####Begin from opgm-build
     ret.enableBsm = 0x142 in fingerprint[CanBus.POWERTRAIN]
-    '''if PEDAL_MSG in fingerprint[0]:
+    if PEDAL_MSG in fingerprint[0]:
       ret.enableGasInterceptor = True
-      ret.safetyConfigs[0].safetyParam |= Panda.FLAG_GM_GAS_INTERCEPTOR'''
-    #####End from opgm-build
+      ret.safetyConfigs[0].safetyParam |= Panda.FLAG_GM_GAS_INTERCEPTOR
+      #####End from opgm-build
 
     if candidate in EV_CAR:
       ret.transmissionType = TransmissionType.direct
@@ -135,7 +135,7 @@ class CarInterface(CarInterfaceBase):
       # Tuning
       ret.longitudinalTuning.kpV = [2.4, 1.5]
       ret.longitudinalTuning.kiV = [0.36]
-    '''#####Begin from opgm-build
+      #####Begin from opgm-build
       if ret.enableGasInterceptor:
         # Need to set ASCM long limits when using pedal interceptor, instead of camera ACC long limits
         ret.safetyConfigs[0].safetyParam |= Panda.FLAG_GM_HW_ASCM_LONG
@@ -145,7 +145,7 @@ class CarInterface(CarInterfaceBase):
     # added to selfdrive/car/tests/routes.py, we can remove it from this list.
     #ret.dashcamOnly = candidate in {CAR.CADILLAC_ATS, CAR.HOLDEN_ASTRA, CAR.MALIBU, CAR.BUICK_REGAL, CAR.EQUINOX} or \
     #                  (ret.networkLocation == NetworkLocation.gateway and ret.radarUnavailable)
-    #####End from opgm-build'''
+    #####End from opgm-build
 
     # Start with a baseline tuning for all GM vehicles. Override tuning as needed in each model section below.
     ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0.], [0.]]
@@ -160,7 +160,7 @@ class CarInterface(CarInterfaceBase):
 
     #####Begin from opgm-build
     if candidate in (CAR.VOLT, CAR.VOLT_CC):
-    #####End from opgm-build
+      #####End from opgm-build
       ret.mass = 1607. + STD_CARGO_KG
       ret.wheelbase = 2.69
       ret.steerRatio = 17.7  # Stock 15.7, LiveParameters
@@ -266,7 +266,7 @@ class CarInterface(CarInterfaceBase):
       ret.steerActuatorDelay = 0.2
       CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
 
-    '''#####Begin from opgm-build
+    #####Begin from opgm-build
     if ret.enableGasInterceptor:
       ret.networkLocation = NetworkLocation.fwdCamera
       ret.safetyConfigs[0].safetyParam |= Panda.FLAG_GM_HW_CAM
@@ -323,7 +323,7 @@ class CarInterface(CarInterfaceBase):
 
     if ACCELERATOR_POS_MSG not in fingerprint[CanBus.POWERTRAIN]:
       ret.flags |= GMFlags.NO_ACCELERATOR_POS_MSG.value
-    #####End from opgm-build'''
+      #####End from opgm-build
 
     # TODO: start from empirically derived lateral slip stiffness for the civic and scale by
     # mass and CG position, so all cars will have approximately similar dyn behaviors
@@ -342,10 +342,10 @@ class CarInterface(CarInterfaceBase):
       if self.CS.cruise_buttons != CruiseButtons.UNPRESS and self.CS.prev_cruise_buttons != CruiseButtons.UNPRESS:
         buttonEvents.append(create_button_event(CruiseButtons.UNPRESS, self.CS.prev_cruise_buttons, BUTTONS_DICT, CruiseButtons.UNPRESS))
 
-      '''#####Begin from opgm-build
+      #####Begin from opgm-build
       if self.CS.distance_button_pressed:
         buttonEvents.append(car.CarState.ButtonEvent(pressed=True, type=ButtonType.gapAdjustCruise))
-      #####End from opgm-build'''
+        #####End from opgm-build
 
       ret.buttonEvents = buttonEvents
 
@@ -365,12 +365,12 @@ class CarInterface(CarInterfaceBase):
       events.add(EventName.belowEngageSpeed)
     #####Begin from opgm-build
     if ret.cruiseState.standstill and not self.CP.autoResumeSng:
-    #####End from opgm-build
+      #####End from opgm-build
       events.add(EventName.resumeRequired)
     if ret.vEgo < self.CP.minSteerSpeed:
       events.add(EventName.belowSteerSpeed)
       
-    '''#####Begin from opgm-build
+    #####Begin from opgm-build
     
     if (self.CP.flags & GMFlags.CC_LONG.value) and ret.vEgo < self.CP.minEnableSpeed and ret.cruiseState.enabled:
       events.add(EventName.speedTooLow)
@@ -380,7 +380,7 @@ class CarInterface(CarInterfaceBase):
       not self.CS.single_pedal_mode and \
       c.longActive:
       events.add(EventName.pedalInterceptorNoBrake)
-    #####End from opgm-build'''
+      #####End from opgm-build
 
     ret.events = events.to_msg()
 

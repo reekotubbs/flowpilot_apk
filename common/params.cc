@@ -76,6 +76,9 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"LiveParameters", PERSISTENT},
     {"LiveTorqueCarParams", PERSISTENT},
     {"LiveTorqueParameters", PERSISTENT | DONT_LOG},
+    //#####Begin from opgm-build
+    {"LongitudinalPersonality", PERSISTENT},
+    //#####End from opgm-build
     {"LaikadEphemerisV3", PERSISTENT | DONT_LOG},
     {"EndToEndToggle", PERSISTENT},
     {"RecordRoad", CLEAR_ON_MANAGER_START},  

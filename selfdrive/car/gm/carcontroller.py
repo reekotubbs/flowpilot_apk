@@ -78,7 +78,7 @@ class CarController:
       pedal_gas = clip(zero + accel, 0., zero)  # Make brake the same size as gas, but clip to regen
 
     return pedal_gas
-  #####End from opgm-build  
+    #####End from opgm-build  
   
   def update(self, CC, sm, CS, now_nanos):
     actuators = CC.actuators
@@ -127,7 +127,7 @@ class CarController:
     if self.CP.openpilotLongitudinalControl:
       # Gas/regen, brakes, and UI commands - all at 25Hz
       if self.frame % 4 == 0:
-      #####Begin from opgm-build
+        #####Begin from opgm-build
         stopping = actuators.longControlState == LongCtrlState.stopping
         at_full_stop = CC.longActive and CS.out.standstill
         near_stop = CC.longActive and (CS.out.vEgo < self.params.NEAR_STOP_BRAKE_PHASE)
@@ -189,9 +189,11 @@ class CarController:
 
           # Send dashboard UI commands (ACC status)
           send_fcw = hud_alert == VisualAlert.fcw
-          can_sends.append(gmcan.create_acc_dashboard_command(self.packer_pt, CanBus.POWERTRAIN, CC.enabled,
+          can_sends.append(gmcan.create_acc_dashboard_command(self.packer_pt, CanBus.POWERTRAIN, CC.enabled, CS.longitudinal_personality,
                                                               hud_v_cruise * CV.MS_TO_KPH, hud_control.leadVisible, send_fcw))
-      #####End from opgm-build
+          #can_sends.append(gmcan.create_acc_dashboard_command(self.packer_pt, CanBus.POWERTRAIN, CC.enabled,
+          #                                                    hud_v_cruise * CV.MS_TO_KPH, hud_control.leadVisible, send_fcw))
+          #####End from opgm-build
 
       # Radar needs to know current speed and yaw rate (50hz),
       # and that ADAS is alive (10hz)
@@ -221,7 +223,7 @@ class CarController:
         if (self.frame - self.last_button_frame) * DT_CTRL > 0.04:
           self.last_button_frame = self.frame
           can_sends.append(gmcan.create_buttons(self.packer_pt, CanBus.POWERTRAIN, (CS.buttons_counter + 1) % 4, CruiseButtons.CANCEL))
-      #####End from opgm-build
+          #####End from opgm-build
 
     else:
       # While car is braking, cancel button causes ECM to enter a soft disable state with a fault status.

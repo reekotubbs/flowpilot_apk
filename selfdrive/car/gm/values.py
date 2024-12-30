@@ -53,7 +53,7 @@ class CarControllerParams:
 
     #####Begin from opgm-build if CP.carFingerprint in CAMERA_ACC_CAR: -> if CP.carFingerprint in CAMERA_ACC_CAR and CP.carFingerprint not in CC_ONLY_CAR:
     if CP.carFingerprint in CAMERA_ACC_CAR and CP.carFingerprint not in CC_ONLY_CAR:
-    #####End from opgm-build
+      #####End from opgm-build
       self.MAX_GAS = 3400
       self.MAX_ACC_REGEN = 1514
       self.INACTIVE_REGEN = 1554
@@ -86,7 +86,7 @@ class CarControllerParams:
     gas_brake_threshold = interp(v_ego, self.EV_GAS_BRAKE_THRESHOLD_BP, self.EV_GAS_BRAKE_THRESHOLD_V)
     self.EV_GAS_LOOKUP_BP = [gas_brake_threshold, max(0., gas_brake_threshold), self.ACCEL_MAX]
     self.EV_BRAKE_LOOKUP_BP = [self.ACCEL_MIN, gas_brake_threshold]
-  #####End from opgm-build
+    #####End from opgm-build
 class CAR:
   HOLDEN_ASTRA = "HOLDEN ASTRA RS-V BK 2017"
   VOLT = "CHEVROLET VOLT PREMIER 2017"
@@ -180,7 +180,7 @@ class GMFlags(IntFlag):
   CC_LONG = 2
   NO_CAMERA = 4
   NO_ACCELERATOR_POS_MSG = 8
-#####End from opgm-build
+  #####End from opgm-build
 
 FINGERPRINTS = {
   CAR.HOLDEN_ASTRA: [
